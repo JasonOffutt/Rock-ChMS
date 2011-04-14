@@ -1,8 +1,14 @@
-﻿using System.Data.Entity.Infrastructure;
+﻿using System;
+using System.Data.Entity.Infrastructure;
 using System.Data.Services;
 using System.Data.Services.Common;
+using System.Linq.Expressions;
 using System.ServiceModel;
+using System.Web;
 using Rock.EntityFramework;
+using Rock.Helpers;
+using Rock.Models.Crm;
+using Rock.Services.Crm;
 
 namespace Rock.Web.WebServices
 {
@@ -66,11 +72,13 @@ namespace Rock.Web.WebServices
             config.SetEntitySetAccessRule("BlogPostComments", EntitySetRights.All);
         }
 
-        //[QueryInterceptor("Persons")]
-        //public Expression<Func<Person, bool>> FindPersonsByLastName(string lastName)
-        //{
-        //    //return p => p.LastName == lastName;
-        //}
+        [QueryInterceptor("Persons")]
+        public Expression<Func<Person, bool>> OnPersonQuery()
+        {
+            var service = new PersonService();
+            var user = HttpContext.Current.User;
+            return p => service.IsAllowedTo(OperationType.View, p, user);
+        }
 
         //[ChangeInterceptor("Persons")]
         //public void OnPersonChange(Person person, UpdateOperations operations)
