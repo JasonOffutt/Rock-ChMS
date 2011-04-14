@@ -278,75 +278,40 @@ namespace Rock.Cms.Security
 
         public override MembershipUserCollection FindUsersByEmail( string emailToMatch, int pageIndex, int pageSize, out int totalRecords )
         {
-            MembershipUserCollection membershipUsers = new MembershipUserCollection();
-
             UserService UserService = new Services.Cms.UserService();
 
-            int counter = 0;
-            int startIndex = pageSize * pageIndex;
-            int endIndex = startIndex + pageSize - 1;
+            var users = UserService.Queryable()
+                .Where(u => u.ApplicationName == applicationName && u.Email.ToLower().StartsWith(emailToMatch.ToLower()))
+                .Skip(pageIndex * pageSize).Take(pageSize);
 
-            foreach ( Rock.Models.Cms.User user
-                in UserService.Queryable().Where( u =>
-                    u.ApplicationName == applicationName &&
-                    u.Email.ToLower().StartsWith( emailToMatch.ToLower() ) ) )
-            {
-                if ( counter >= startIndex && counter <= endIndex )
-                    membershipUsers.Add( GetUserFromModel( user ) );
-
-                counter++;
-            }
-
-            totalRecords = counter;
+            MembershipUserCollection membershipUsers = GetMembershipUsersFromQuery(users);
+            totalRecords = membershipUsers.Count;
             return membershipUsers;
         }
 
         public override MembershipUserCollection FindUsersByName( string usernameToMatch, int pageIndex, int pageSize, out int totalRecords )
         {
-            MembershipUserCollection membershipUsers = new MembershipUserCollection();
-
             UserService UserService = new Services.Cms.UserService();
 
-            int counter = 0;
-            int startIndex = pageSize * pageIndex;
-            int endIndex = startIndex + pageSize - 1;
+            var users = UserService.Queryable()
+                .Where(u => u.ApplicationName == applicationName && u.Username.ToLower().StartsWith(usernameToMatch.ToLower()))
+                .Skip(pageIndex * pageSize).Take(pageSize);
 
-            foreach ( Rock.Models.Cms.User user
-                in UserService.Queryable().Where( u =>
-                    u.ApplicationName == applicationName &&
-                    u.Username.ToLower().StartsWith( usernameToMatch.ToLower() ) ) )
-            {
-                if ( counter >= startIndex && counter <= endIndex )
-                    membershipUsers.Add( GetUserFromModel( user ) );
-
-                counter++;
-            }
-
-            totalRecords = counter;
+            MembershipUserCollection membershipUsers = GetMembershipUsersFromQuery(users);
+            totalRecords = membershipUsers.Count;
             return membershipUsers;
         }
 
         public override MembershipUserCollection GetAllUsers( int pageIndex, int pageSize, out int totalRecords )
         {
-            MembershipUserCollection membershipUsers = new MembershipUserCollection();
-
             UserService UserService = new Services.Cms.UserService();
 
-            int counter = 0;
-            int startIndex = pageSize * pageIndex;
-            int endIndex = startIndex + pageSize - 1;
+            var users = UserService.Queryable()
+                .Where(u => u.ApplicationName == applicationName)
+                .Skip(pageIndex * pageSize).Take(pageSize);
 
-            foreach ( Rock.Models.Cms.User user
-                in UserService.Queryable().Where( u =>
-                    u.ApplicationName == applicationName ) ) 
-            {
-                if ( counter >= startIndex && counter <= endIndex )
-                    membershipUsers.Add( GetUserFromModel( user ) );
-
-                counter++;
-            }
-
-            totalRecords = counter;
+            MembershipUserCollection membershipUsers = GetMembershipUsersFromQuery(users);
+            totalRecords = membershipUsers.Count;
             return membershipUsers;
         }
 
@@ -433,6 +398,18 @@ namespace Rock.Cms.Security
                 user.LastPasswordChangedDate ?? now,
                 user.LastLockedOutDate ?? now );
 
+        }
+
+        private MembershipUserCollection GetMembershipUsersFromQuery(IEnumerable<Models.Cms.User> query)
+        {
+            var membershipUsers = new MembershipUserCollection();
+
+            foreach (var user in query)
+            {
+                membershipUsers.Add(GetUserFromModel(user));
+            }
+
+            return membershipUsers;
         }
 
         public override string GetUserNameByEmail( string email )
