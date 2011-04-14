@@ -5,10 +5,11 @@ using System.Data.Services.Common;
 using System.Linq.Expressions;
 using System.ServiceModel;
 using System.Web;
+using Rock.Cms.Security;
 using Rock.EntityFramework;
 using Rock.Helpers;
 using Rock.Models.Crm;
-using Rock.Services.Crm;
+using Rock.Services.Cms;
 
 namespace Rock.Web.WebServices
 {
@@ -75,9 +76,16 @@ namespace Rock.Web.WebServices
         [QueryInterceptor("Persons")]
         public Expression<Func<Person, bool>> OnPersonQuery()
         {
-            var service = new PersonService();
             var user = HttpContext.Current.User;
-            return p => service.IsAllowedTo(OperationType.View, p, user);
+
+            if (user == null)
+            {
+                throw new DataServiceException(403, "You must be logged in.");
+            }
+
+            var service = new UserService();
+            var rockUser = service.GetUserByApplicationNameAndUsername("RockChMS", user.Identity.Name);
+            return p => Authorization.Authorized(p, "View", MembershipHelper.GetMembershipUserFromModel("RockMembershipProvider", rockUser));
         }
 
         //[ChangeInterceptor("Persons")]
