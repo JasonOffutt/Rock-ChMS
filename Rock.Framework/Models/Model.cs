@@ -15,9 +15,6 @@ namespace Rock.Models
     [IgnoreProperties(new[] { "ParentAuthority", "SupportedActions", "AuthEntity" })]
     public abstract class Model :  Rock.Cms.Security.ISecured
     {
-        // Note: The DataServiceKey attribute is part of the magic behind WCF Data Services. This allows
-        // the service to interface with EF and fetch data.
-
         [Key]
         public int Id { get; set; }
 
