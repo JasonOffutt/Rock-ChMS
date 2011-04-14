@@ -10,6 +10,7 @@ using Rock.EntityFramework;
 using Rock.Helpers;
 using Rock.Models.Crm;
 using Rock.Services.Cms;
+using Rock.Services.Crm;
 
 namespace Rock.Web.WebServices
 {
@@ -88,11 +89,34 @@ namespace Rock.Web.WebServices
             return p => Authorization.Authorized(p, "View", MembershipHelper.GetMembershipUserFromModel("RockMembershipProvider", rockUser));
         }
 
-        //[ChangeInterceptor("Persons")]
-        //public void OnPersonChange(Person person, UpdateOperations operations)
-        //{
-        //    // Can use this point to apply per-record access security
-        //    // This, of course would end up getting 
-        //}
+        [ChangeInterceptor("Persons")]
+        public void OnPersonChange(Person person, UpdateOperations operations)
+        {
+            var user = HttpContext.Current.User;
+
+            if (user == null)
+            {
+                throw new DataServiceException(403, "You must be logged in.");
+            }
+
+            var service = new UserService();
+            var rockUser = service.GetUserByApplicationNameAndUsername("RockChMS", user.Identity.Name);
+
+            var canEdit = Authorization.Authorized(person, "Edit", MembershipHelper.GetMembershipUserFromModel("RockmembershipProvider", rockUser));
+
+            if (!canEdit)
+            {
+                throw new DataServiceException(403, "You do not have permission to edit this record.");
+            }
+
+            var personService = new PersonService();
+
+            if (person.Id <= 0)
+            {
+                personService.AddPerson(person);
+            }
+
+            personService.Save(person, person.Id);
+        }
     }
 }
