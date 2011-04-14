@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Configuration.Provider;
 using System.Linq;
 using System.Text;
-using System.Web;
 using System.Web.Configuration;
 using System.Web.Security;
 using System.Security.Cryptography;
-
+using Rock.Helpers;
 using Rock.Services.Cms;
 
 namespace Rock.Cms.Security
@@ -381,23 +380,7 @@ namespace Rock.Cms.Security
 
         private MembershipUser GetUserFromModel( Rock.Models.Cms.User user )
         {
-            DateTime now = DateTime.Now;
-            
-            return new MembershipUser(
-                this.Name,
-                user.Username,
-                user.PersonId,
-                user.Email,
-                user.PasswordQuestion,
-                user.Comment,
-                user.IsApproved ?? true,
-                user.IsLockedOut ?? false,
-                user.CreationDate ?? now,
-                user.LastLoginDate ?? now,
-                user.LastActivityDate ?? now,
-                user.LastPasswordChangedDate ?? now,
-                user.LastLockedOutDate ?? now );
-
+            return MembershipHelper.GetMembershipUserFromModel(this.Name, user);
         }
 
         private MembershipUserCollection GetMembershipUsersFromQuery(IEnumerable<Models.Cms.User> query)
