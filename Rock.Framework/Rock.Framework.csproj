@@ -93,6 +93,7 @@
     <Compile Include="FieldTypes\IFieldType.cs" />
     <Compile Include="FieldTypes\Text.cs" />
     <Compile Include="Helpers\HtmlHelper.cs" />
+    <Compile Include="Helpers\MembershipHelper.cs" />
     <Compile Include="Models\Cms\Auth.cs" />
     <Compile Include="Models\Cms\Blog.cs" />
     <Compile Include="Models\Cms\BlogCategory.cs" />
